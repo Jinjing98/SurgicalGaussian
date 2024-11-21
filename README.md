@@ -2,12 +2,14 @@
 
 ### [Project Page](https://surgicalgaussian.github.io/)
 
+---
 
--------------------------------------------
 ![introduction](assets/method.png)
 
 ## Environment
+
 Please follow the [3D-GS](https://github.com/graphdeco-inria/gaussian-splatting) and [4DGS](https://github.com/hustvl/4DGaussians) to install the relative packages.
+
 ```bash
 git clone https://github.com/xwx0924/SurgicalGaussian.git
 cd SurgicalGaussian
@@ -26,11 +28,13 @@ pip install -e submodules/simple-knn
 ```
 
 ## Dataset
-**EndoNeRF Dataset:**  
+
+**EndoNeRF Dataset:**
 The dataset from [EndoNeRF](https://github.com/med-air/EndoNeRF) is used, which can be downloaded from their website. We use the clips 'pulling_soft_tissues' and 'cutting_tissues_twice'.
 
-**StereoMIS Dataset:**  
+**StereoMIS Dataset:**
 The dataset provided in [StereoMIS](https://zenodo.org/records/7727692) is used. We use the clips 'p2-7' and 'p2-8'. The resulted file structure is as follows.
+
 ```
 ├── data
 │   | EndoNeRF 
@@ -42,38 +46,42 @@ The dataset provided in [StereoMIS](https://zenodo.org/records/7727692) is used.
 |     ├── ...
 ```
 
-
 ## Training
-For surgical scene `pulling_soft_tissues`, run 
-``` 
+
+For surgical scene `pulling_soft_tissues`, run
+
 python train.py -s data/EndoNeRF/pulling -m output/pulling --config arguments/endonerf/pulling.py 
-``` 
+
+jinjing:
+
+python train.py -s /mnt/cluster/datasets/EndoNeRF/pulling -m /mnt/ceph/tco/TCO-Staff/Homes/jinjing/exps/train/gs/debug/EndoNeRF/pulling --config arguments/endonerf/pulling.py
 
 ## Rendering
-Run the following script to render the images.  
+
+Run the following script to render the images.
 
 ```
 python render.py -m output/pulling
 ```
 
-
 ## Evaluation
-Run the following script to evaluate the model.  
+
+Run the following script to evaluate the model.
 
 ```
 python metrics.py -m output/pulling
 ```
 
 ---
+
 ## Acknowledgement
-
-
 
 Some source code is borrowed from [3DGS](https://github.com/graphdeco-inria/gaussian-splatting), [4DGS](https://github.com/hustvl/4DGaussians), and [Deformable-3D-Gaussian](https://github.com/ingra14m/Deformable-3D-Gaussians/tree/main). Thanks for their excellent code.
 
-
 ## Citation
-If you find this work helpful, welcome to cite this paper. 
+
+If you find this work helpful, welcome to cite this paper.
+
 ```
 @article{xie2024surgicalgaussian,
   author    = {Xie, Weixing and Yao, Junfeng and Cao, Xianpeng and Lin, Qiqin and Tang, Zerui and Dong, Xiao and Guo, Xiaohu},

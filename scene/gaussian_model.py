@@ -20,7 +20,7 @@ from utils.sh_utils import RGB2SH
 from simple_knn._C import distCUDA2
 from utils.graphics_utils import BasicPointCloud
 from utils.general_utils import strip_symmetric, build_scaling_rotation
-import tinycudann as tcnn
+# import tinycudann as tcnn
 
 class GaussianModel:
     def __init__(self, sh_degree: int):

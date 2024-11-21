@@ -63,6 +63,24 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations):
     progress_bar = tqdm(range(opt.iterations), desc="Training progress")
 
     for iteration in range(1, opt.iterations + 1):
+        #/////////////////jj start//////////
+        # if network_gui.conn == None:
+        #     network_gui.try_connect()
+        # while network_gui.conn != None:
+        #     try:
+        #         net_image_bytes = None
+        #         custom_cam, do_training, pipe.do_shs_python, pipe.do_cov_python, keep_alive, scaling_modifer = network_gui.receive()
+        #         if custom_cam != None:
+        #             net_image = render(custom_cam, gaussians, pipe, background, scaling_modifer)["render"]
+        #             net_image_bytes = memoryview((torch.clamp(net_image, min=0, max=1.0) * 255).byte().permute(1, 2,
+        #                                                                                                        0).contiguous().cpu().numpy())
+        #         network_gui.send(net_image_bytes, dataset.source_path)
+        #         if do_training and ((iteration < int(opt.iterations)) or not keep_alive):
+        #             break
+        #     except Exception as e:
+        #         network_gui.conn = None
+        #/////////////////jj end//////////
+
 
         iter_start.record()
 
@@ -228,6 +246,7 @@ def read_config_params(args, config):
     for param in params:
         if param in config.keys():
             for key, value in config[param].items():
+
                 if hasattr(args, key):
                     setattr(args, key, value)
     return args
@@ -327,7 +346,9 @@ if __name__ == "__main__":
     safe_state(args.quiet)
 
     # Start GUI server, configure and run training
-    # network_gui.init(args.ip, args.port)
+    # jj: enable online monitoring
+    network_gui.init(args.ip, args.port)
+
     torch.autograd.set_detect_anomaly(args.detect_anomaly)
     training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations)
 

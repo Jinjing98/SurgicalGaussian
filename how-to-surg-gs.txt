@@ -1,0 +1,24 @@
+********************train********************
+****************use ws18
+
+(misgs) jinjingxu@g27ws0018:/mnt/ceph/tco/TCO-Staff/Homes/jinjing/proj/gs/baselines/SurgicalGaussian$ \
+python train.py -s /mnt/cluster/datasets/EndoNeRF/pulling \
+-m /mnt/ceph/tco/TCO-Staff/Homes/jinjing/exps/train/gs/debug/EndoNeRF/pulling \
+--config arguments/endonerf/pulling.py
+
+
+*******vis**************
+on local laptop:
+(tb_vis) jinjingxu@G27LP0076-Linux:~$ tensorboard --logdir /home/jinjingxu/ceph_mnt/exps/train/gs/debug/EndoNeRF/pulling/
+*******vis**train************
+(need ssh -X 18 then train_gui.py)
+train with train_gui for real-time-4dgs monitoring
+
+
+
+
+ 
+
+
+unclear:
+1. implementation was missing means2d_densify
