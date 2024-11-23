@@ -8,8 +8,8 @@ import cv2 as cv
 def imread(f):
     if f.endswith('png'):
         return imageio.imread(f, 
-                            #   ignoregamma=True,
-                              apply_gamma = True,
+                              ignoregamma=True,
+                            #   apply_gamma = True,
                               )
     else:
         return imageio.imread(f)
