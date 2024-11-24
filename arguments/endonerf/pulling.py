@@ -7,6 +7,11 @@ ModelParams = dict(
     depth_initial=True,
     accurate_mask=True,
     is_depth=True,
+
+    #jj
+    tool_mask = 'use',
+    # tool_mask = 'inverse',
+    # tool_mask = 'nouse',
 )
 
 OptimizationParams = dict(

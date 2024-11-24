@@ -68,6 +68,9 @@ class ModelParams(ParamGroup):
         self.depth_initial = False
         self.accurate_mask = False
 
+        #jj
+        self.tool_mask = None#'use'
+
         super().__init__(parser, "Loading Parameters", sentinel)
 
     def extract(self, args):

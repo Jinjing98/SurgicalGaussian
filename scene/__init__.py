@@ -45,7 +45,9 @@ class Scene:
         if os.path.exists(os.path.join(args.source_path, "poses_bounds.npy")):
             print("Found calibration_full.json, assuming Endonerf data set!")
             scene_info = sceneLoadTypeCallbacks["Endonerf"](args.source_path, args.dataset_type, args.eval, args.is_depth, args.depth_scale, args.is_mask,
-                                                            args.depth_initial, args.frame_nums, args.test_id)
+                                                            args.depth_initial, args.frame_nums, args.test_id,
+                                                            args.tool_mask #jj
+                                                            )
         else:
             assert False, "Could not recognize scene type!"
 

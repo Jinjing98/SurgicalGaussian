@@ -14,7 +14,12 @@ def imread(f):
     else:
         return imageio.imread(f)
 
-def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file):
+def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file,
+                              tool_mask = 'use', #['inverse','nouse','use']
+                              ):
+    assert tool_mask in ['inverse','nouse','use'], tool_mask
+    from scene.dataset_readers import process_mask_image
+    
     poses_bounds = np.load(os.path.join(path, npy_file))
     poses = poses_bounds[:, :15].reshape(-1, 3, 5)
     H, W, focal = poses[0, :, -1]
@@ -32,6 +37,10 @@ def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file):
             img_name = masks_path[i]
             f_mask = os.path.join(GT_masks_path, img_name)
             m = 1.0 - np.array(imread(f_mask) / 255.0)
+            
+            #jj
+            m = process_mask_image(m,tool_mask, normed = True)
+
             inpaint_mask_all = inpaint_mask_all + m
             inpaint_mask_all[inpaint_mask_all >= 1] = 1
 
@@ -44,6 +53,7 @@ def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file):
 
         dilated_mask = cv.dilate(inpaint_mask_all, kernel, iterations=2)
         if data_type == 'endonerf':
+            print('weird...............................')
             dilated_mask[-12:, :] = 255
         fn = os.path.join(path, f"dilated_invisible_mask.png")
         imageio.imwrite(fn, dilated_mask)
@@ -64,8 +74,10 @@ def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file):
 
         mask_image = None
         if is_mask:
-            mask_path = masks_path[i]
+            mask_path = masks_path[i]            
             mask_image = np.array(imread(mask_path) / 255.0)
+            #jj
+            mask_image = process_mask_image(m,tool_mask, normed = True)
             # mask is 0 or 1
             mask_image = np.where(mask_image > 0.5, 1.0, 0.0)
             # Convert 0 for tool, 1 for not tool

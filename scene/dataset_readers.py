@@ -138,7 +138,29 @@ def storePly(path, xyz, rgb):
     ply_data.write(path)
 
 
-def readCamerasdavinci(path, data_type, is_depth, depth_scale, is_mask, npy_file, split, hold_id, num_images):
+
+#jj
+def process_mask_image(mask_image,tool_mask, normed):
+    if normed:
+        assert mask_image.max()<=1
+    else:
+        assert mask_image.max()<=255
+
+    if tool_mask == 'inverse':
+        mask_image = 1.0 - mask_image if normed else 255 - mask_image
+    elif tool_mask == 'nouse':
+        mask_image = np.ones_like(mask_image)  if normed else 255*np.ones_like(mask_image)
+    elif tool_mask == 'use':
+        pass
+    else:
+        assert 0
+    return mask_image
+
+def readCamerasdavinci(path, data_type, is_depth, depth_scale, is_mask, npy_file, split, hold_id, num_images, 
+                       tool_mask):
+    
+    assert tool_mask in ['inverse','nouse','use'], tool_mask
+
     cam_infos = []
     poses_bounds = np.load(os.path.join(path, npy_file))
     poses = poses_bounds[:, :15].reshape(-1, 3, 5)
@@ -182,7 +204,15 @@ def readCamerasdavinci(path, data_type, is_depth, depth_scale, is_mask, npy_file
             # Convert 0 for tool, 1 for not tool
             mask_image = 1.0 - mask_image
             if data_type == 'endonerf':
+                # assert 0, f"{mask_image.shape}...?"
+                print('weird...............................')
                 mask_image[-12:, :] = 0
+
+            mask_image = process_mask_image(mask_image,tool_mask, normed = True)
+
+
+
+
 
         depth_image = None
         mask_depth = None
@@ -209,14 +239,23 @@ def readCamerasdavinci(path, data_type, is_depth, depth_scale, is_mask, npy_file
     return cam_infos
 
 
-def readEndonerfInfo(path, data_type, eval, is_depth, depth_scale, is_mask, depth_initial, num_images, hold_id):  # hold_id选择test的帧数ID,这个是endosurf的测试集
+def readEndonerfInfo(path, data_type, eval, is_depth, depth_scale, is_mask, depth_initial, num_images, hold_id,
+                     tool_mask = 'use',# ['inverse','nouse','use']
+                     ):  # hold_id选择test的帧数ID,这个是endosurf的测试集
+    assert tool_mask in ['inverse','nouse','use'],\
+        f"mask supported: 'inverse','nouse','use' while take {tool_mask} "
+
     print("Reading Training Camera")
     train_cam_infos = readCamerasdavinci(
-        path, data_type, is_depth, depth_scale, is_mask, 'poses_bounds.npy', split="train", hold_id=hold_id, num_images=num_images)
+        path, data_type, is_depth, depth_scale, is_mask, 'poses_bounds.npy', split="train", hold_id=hold_id, num_images=num_images,
+        tool_mask = tool_mask,
+        )
 
     print("Reading Test Camera")
     test_cam_infos = readCamerasdavinci(
-        path, data_type, is_depth, depth_scale, is_mask, 'poses_bounds.npy', split="test", hold_id=hold_id, num_images=num_images)
+        path, data_type, is_depth, depth_scale, is_mask, 'poses_bounds.npy', split="test", hold_id=hold_id, num_images=num_images,
+        tool_mask = tool_mask,
+        )
 
     if not eval:
         train_cam_infos.extend(test_cam_infos)
