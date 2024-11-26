@@ -44,17 +44,25 @@ class Scene:
 
         if os.path.exists(os.path.join(args.source_path, "poses_bounds.npy")):
             print("Found calibration_full.json, assuming Endonerf data set!")
-            scene_info = sceneLoadTypeCallbacks["Endonerf"](args.source_path, args.dataset_type, args.eval, args.is_depth, args.depth_scale, args.is_mask,
+            scene_info, plydata = sceneLoadTypeCallbacks["Endonerf"](args.source_path, args.dataset_type, args.eval, args.is_depth, args.depth_scale, args.is_mask,
                                                             args.depth_initial, args.frame_nums, args.test_id,
                                                             args.tool_mask #jj
                                                             )
+            self.inpaint_mask_all = scene_info.inpaint_mask_all
+            self.dilated_mask = scene_info.dilated_mask
         else:
             assert False, "Could not recognize scene type!"
 
+        #extend to be used for defromgs format
         if not self.loaded_iter:  # scene_info里读取对应的数据
-            with open(scene_info.ply_path, 'rb') as src_file, open(os.path.join(self.model_path, "input.ply"),
-                                                                   'wb') as dest_file:   # input.ply
-                dest_file.write(src_file.read())
+            # with open(scene_info.ply_path, 'rb') as src_file, open(os.path.join(self.model_path, "input.ply"),
+            #                                                        'wb') as dest_file:   # input.ply
+            #     dest_file.write(src_file.read())
+            with open(os.path.join(self.model_path, "input.ply"), 'wb') as dest_file:  # Open in binary write mode
+                plydata.write(dest_file)
+
+
+
             json_cams = []
             camlist = []
             if scene_info.test_cameras:

@@ -27,6 +27,7 @@ def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file,
     W = W.astype(int)
 
     video_path = sorted(glob(os.path.join(path, 'images/*')))
+    inpaint_mask_all, dilated_mask = None, None
     if is_mask:
         masks_path = sorted(glob(os.path.join(path, 'gt_masks/*')))
         GT_masks_path = os.path.join(path, "gt_masks")
@@ -47,16 +48,16 @@ def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file,
         inpaint_mask_all = (1.0 - inpaint_mask_all) * 255.0
         inpaint_mask_all = inpaint_mask_all.astype(np.uint8)
 
-        fn = os.path.join(path, f"invisible_mask.png")
-        imageio.imwrite(fn, inpaint_mask_all)
+        # fn = os.path.join(path, f"invisible_mask.png")
+        # imageio.imwrite(fn, inpaint_mask_all)
         kernel = np.ones((5, 5), np.uint8)
 
         dilated_mask = cv.dilate(inpaint_mask_all, kernel, iterations=2)
         if data_type == 'endonerf':
             print('weird...............................')
             dilated_mask[-12:, :] = 255
-        fn = os.path.join(path, f"dilated_invisible_mask.png")
-        imageio.imwrite(fn, dilated_mask)
+        # fn = os.path.join(path, f"dilated_invisible_mask.png")
+        # imageio.imwrite(fn, dilated_mask)
 
     depths_path = sorted(glob(os.path.join(path, 'depth/*')))
 
@@ -113,7 +114,8 @@ def get_all_initial_data_endo(path, data_type, depth_scale, is_mask, npy_file,
     intrinsics[2, 2] = 1.0
 
 
-    return color_all, depth_all, intrinsics, mask_all
+    # return color_all, depth_all, intrinsics, mask_all
+    return color_all, depth_all, intrinsics, mask_all, inpaint_mask_all,dilated_mask
 
 def get_pointcloud(color, depth, intrinsics, mask, w2c=None, transform_pts=False):
     width, height = color.shape[2], color.shape[1]

@@ -52,8 +52,10 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations):
     iter_end = torch.cuda.Event(enable_timing=True)
 
     if dataset.accurate_mask:
-        invisible_mask_path = os.path.join(dataset.source_path, "dilated_invisible_mask.png")
-        inpaint_mask = imread(invisible_mask_path) / 255.0
+        # inpaint_mask_all, dilated_mask
+        # invisible_mask_path = os.path.join(dataset.source_path, "dilated_invisible_mask.png")
+        # inpaint_mask = imread(invisible_mask_path) / 255.0
+        inpaint_mask = scene.inpaint_mask_all/255.0 #dilated_mask = scene_info.dilated_mask
         inpaint_mask_tensor = torch.tensor(inpaint_mask, dtype=torch.float32, device="cuda")
     viewpoint_stack = None
     ema_loss_for_log = 0.0

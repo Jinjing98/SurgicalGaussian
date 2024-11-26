@@ -52,7 +52,9 @@ class SceneInfo(NamedTuple):
     test_cameras: list
     nerf_normalization: dict
     ply_path: str
-
+    #avoid save the two image locally
+    inpaint_mask_all: Optional[np.array] = None
+    dilated_mask: Optional[np.array] = None
 
 def load_K_Rt_from_P(filename, P=None):
     if P is None:
@@ -109,25 +111,27 @@ def getNerfppNorm(cam_info):
 
     return {"translate": translate, "radius": radius}
 
+# sys.path.append('/mnt/ceph/tco/TCO-Staff/Homes/jinjing/proj/gs')
+# from misGS.scene.dataset_readers import storePly,fetchPly
 
-def fetchPly(path):
-    plydata = PlyData.read(path)
+def fetchPly(path = None, plydata = None):
+    if path == None:
+        assert plydata != None
+    else:
+        plydata = PlyData.read(path)
     vertices = plydata['vertex']
     positions = np.vstack([vertices['x'], vertices['y'], vertices['z']]).T
-    colors = np.vstack([vertices['red'], vertices['green'],
-                       vertices['blue']]).T / 255.0
+    colors = np.vstack([vertices['red'], vertices['green'], vertices['blue']]).T / 255.0
     normals = np.vstack([vertices['nx'], vertices['ny'], vertices['nz']]).T
     return BasicPointCloud(points=positions, colors=colors, normals=normals)
 
-
-def storePly(path, xyz, rgb):
+def storePly(path, xyz, rgb, wo_write = False):
     # Define the dtype for the structured array
     dtype = [('x', 'f4'), ('y', 'f4'), ('z', 'f4'),
-             ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'),
-             ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
-
+            ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'),
+            ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
+    
     normals = np.zeros_like(xyz)
-
     elements = np.empty(xyz.shape[0], dtype=dtype)
     attributes = np.concatenate((xyz, normals, rgb), axis=1)
     elements[:] = list(map(tuple, attributes))
@@ -135,9 +139,9 @@ def storePly(path, xyz, rgb):
     # Create the PlyData object and write to file
     vertex_element = PlyElement.describe(elements, 'vertex')
     ply_data = PlyData([vertex_element])
-    ply_data.write(path)
-
-
+    if not wo_write:
+        ply_data.write(path)
+    return ply_data
 
 #jj
 def process_mask_image(mask_image,tool_mask, normed):
@@ -267,10 +271,12 @@ def readEndonerfInfo(path, data_type, eval, is_depth, depth_scale, is_mask, dept
     ply_path = os.path.join(path, 'points3D.ply')
     if not os.path.exists(ply_path):
         if depth_initial:
-            color, depth, intrinsics, mask = get_all_initial_data_endo(path, data_type, depth_scale, is_mask, 'poses_bounds.npy')
+            # color, depth, intrinsics, mask = get_all_initial_data_endo(path, data_type, depth_scale, is_mask, 'poses_bounds.npy')
+            color, depth, intrinsics, mask, inpaint_mask_all, dilated_mask = get_all_initial_data_endo(path, data_type, depth_scale, is_mask, 'poses_bounds.npy')
 
             xyz, RGB = get_pointcloud(color, depth, intrinsics, mask)
-            storePly(ply_path, xyz, RGB)
+            # storePly(ply_path, xyz, RGB)
+            plydata = storePly(ply_path, xyz, RGB,wo_write=True)
 
         else:
             num_pts = 100_000
@@ -282,10 +288,15 @@ def readEndonerfInfo(path, data_type, eval, is_depth, depth_scale, is_mask, dept
             pcd = BasicPointCloud(points=xyz, colors=SH2RGB(
                 shs), normals=np.zeros((num_pts, 3)))
 
-            storePly(ply_path, xyz, SH2RGB(shs) * 255)
-
+            # storePly(ply_path, xyz, SH2RGB(shs) * 255)
+            plydata = storePly(ply_path, xyz, SH2RGB(shs) * 255,wo_write=True)
+        print('TODO','save the .ply in model dir(current is not good--overlap several runs).., no returning in the callbacks')
+    else:
+        assert 0,'online init...'
     try:
-        pcd = fetchPly(ply_path)
+        # pcd = fetchPly(ply_path)
+        pcd = fetchPly(path = None, plydata = plydata)
+
     except:
         pcd = None
 
@@ -293,8 +304,13 @@ def readEndonerfInfo(path, data_type, eval, is_depth, depth_scale, is_mask, dept
                            train_cameras=train_cam_infos,
                            test_cameras=test_cam_infos,
                            nerf_normalization=nerf_normalization,
-                           ply_path=ply_path)
-    return scene_info
+                           ply_path=ply_path,
+                           #jj
+                           inpaint_mask_all = inpaint_mask_all,
+                           dilated_mask=dilated_mask,
+                           )
+    # return scene_info
+    return scene_info, plydata
 
 
 sceneLoadTypeCallbacks = {
